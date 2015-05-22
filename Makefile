@@ -20,7 +20,8 @@ all: CFLAGS += -Os
 all: LDFLAGS += -s
 all: dmenu stest
 
-debug: CFLAGS += -g -O0 -DDEBUG
+debug: CFLAGS += -g -pg -O0 -DDEBUG
+debug: LDFLAGS += -pg
 debug: dmenu stest
 
 .c.o:
