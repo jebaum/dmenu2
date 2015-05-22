@@ -793,7 +793,7 @@ compare_distance(const void *a, const void *b) {
 }
 
 char* lowerString(char* s, int n) {
-    char* sLower = malloc(sizeof(char) * n);
+    char* sLower = malloc(sizeof(char) * n + 1);
     strcpy(sLower, s);
     int i;
     for(i = 0; i < n; ++i)
