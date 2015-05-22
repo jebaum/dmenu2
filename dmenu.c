@@ -1,4 +1,7 @@
 /* See LICENSE file for copyright and license details. */
+// TODO only matchfuzzy currently makes use of lowercase cache
+// make sure the other matcher functions do that as well
+// -i and -s are still super slow when they don't need to be
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -336,8 +339,13 @@ calcoffsets(void) {
 
 char *
 cistrstr(const char *s, const char *sub) {
+    // s is thing (item) to be matched, sub is user input
+    // printf("s: %s\n", s);
+    // printf("u: %s\n\n", sub);
 	size_t len;
 
+    // these next two lines take up about 70% of execution time
+    // called via fstrstr function pointer in matchstr and matchtok
 	for(len = strlen(sub); *s; s++)
 		if(!strncasecmp(s, sub, len))
 			return (char *)s;

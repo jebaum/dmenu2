@@ -6,9 +6,9 @@ if [ "$#" != "0" ]; then
     "$@"
 else
     if hash locate 2>/dev/null; then
-        locate "" | ./dmenu -z -s -centerx -centery -w 500 -l 20
+        locate "" | ./dmenu -s -centerx -centery -w 500 -l 20
     else
-        ls -R /bin | ./dmenu -z -s -centerx -centery -w 500 -l 20
+        ls -R /bin | ./dmenu -s -centerx -centery -w 500 -l 20
     fi
 fi
 
