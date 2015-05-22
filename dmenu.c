@@ -25,6 +25,7 @@
 typedef struct Item Item;
 struct Item {
 	char *text;
+    char *textLower;
 	Item *left, *right;
     int distance;
 };
@@ -59,6 +60,7 @@ static void setup(void);
 static void usage(void);
 static void read_resourses(void);
 static char text[BUFSIZ] = "";
+static char textLower[BUFSIZ] = "";
 static char originaltext[BUFSIZ] = "";
 static int bh, mw, mh;
 static int inputw, promptw;
@@ -457,6 +459,13 @@ insert(const char *str, ssize_t n) {
 		memcpy(&text[cursor], str, n);
 	cursor += n;
 
+    if (caseInsensitive || smartCase) {
+        strcpy(textLower, text);
+        int len = strlen(textLower), i;
+        for (i = 0; i < len; ++i)
+            textLower[i] = tolower(textLower[i]);
+    }
+
     if (smartCase) {
         int text_len = strlen(text), i;
         caseInsensitive = True;
@@ -792,26 +801,14 @@ compare_distance(const void *a, const void *b) {
 	return da->distance - db->distance;
 }
 
-char*
-lowerString(const char* s, const int n) {
-    char* sLower = malloc(sizeof(char) * n + 1);
-    strcpy(sLower, s);
-    int i;
-    for(i = 0; i < n; ++i)
-        sLower[i] = tolower(sLower[i]);
-
-    return sLower;
-}
-
 void
 matchfuzzy(void) {
 	/* bang - we have so much memory */
 	Item *item;
 	Item **fuzzymatches = NULL;
-	char c;
 	int number_of_matches = 0, i, pidx, sidx, eidx;
 	int text_len = strlen(text), itext_len;
-    char* inputText = caseInsensitive ? lowerString(text, text_len) : text;
+    char* inputText = caseInsensitive ? textLower : text;
 
 	matches = matchend = NULL;
 
@@ -820,16 +817,16 @@ matchfuzzy(void) {
 		match();
 
 	/* walk through all items */
-	for(item = items; item && item->text; item++) {
+	for(item = items; item && item->text; ++item) {
 		if(text_len) {
 			itext_len = strlen(item->text);
-            char* itemText = caseInsensitive ? lowerString(item->text, itext_len) : item->text;
+            char* itemText = caseInsensitive ? item->textLower : item->text;
 			pidx = 0;
 			sidx = eidx = -1;
 			/* walk through item text */
-			for(i = 0; i < itext_len && (c = itemText[i]); i++) {
+			for(i = 0; i < itext_len; ++i) {
 				/* fuzzy match pattern */
-				if(inputText[pidx] == c) {
+				if(inputText[pidx] == itemText[i]) {
 					if(sidx == -1)
 						sidx = i;
 					pidx++;
@@ -839,9 +836,6 @@ matchfuzzy(void) {
 					}
 				}
 			}
-            if(caseInsensitive)
-                free(itemText);
-
 			/* build list of matches */
 			if(eidx != -1) {
 				/* compute distance */
@@ -875,8 +869,6 @@ matchfuzzy(void) {
 	}
 	curr = sel = matches;
 	calcoffsets();
-    if(caseInsensitive)
-        free(inputText);
 }
 
 size_t
@@ -938,8 +930,13 @@ readitem(FILE *fd, struct item_state *s) {
 
     len = strlen(s->buf);
 
-    if (!(items[s->items].text = strdup(s->buf))) {
+    if (!((items[s->items].text = strdup(s->buf)) && (items[s->items].textLower = strdup(s->buf)))) {
 		  eprintf("cannot strdup %u bytes:", len + 1);
+    }
+
+    size_t i;
+    for (i = 0; i < len; ++i) {
+        items[s->items].textLower[i] = tolower(items[s->items].textLower[i]);
     }
 
     if(len > s->max_len) {
