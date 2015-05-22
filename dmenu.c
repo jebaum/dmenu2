@@ -50,7 +50,6 @@ static void keypress(XKeyEvent *ev);
 static void matchstr(void);
 static void matchtok(void);
 static void matchfuzzy(void);
-static char *strchri(const char *s, int c);
 static size_t nextrune(int inc);
 static size_t utf8length();
 static void paste(void);
@@ -116,7 +115,6 @@ static int hcnt = 0;
 static int (*fstrncmp)(const char *, const char *, size_t) = strncmp;
 static char *(*fstrstr)(const char *, const char *) = strstr;
 static void (*match)(void) = matchstr;
-static char *(*fstrchr)(const char *, const int) = strchr;
 
 int
 main(int argc, char *argv[]) {
@@ -146,7 +144,6 @@ main(int argc, char *argv[]) {
 		else if(!strcmp(argv[i], "-i")) { /* case-insensitive item matching */
 			fstrncmp = strncasecmp;
 			fstrstr = cistrstr;
-			fstrchr = strchri;
             caseInsensitive = True;
 		}
       else if(!strcmp(argv[i], "-mask")) /* password-style input */
@@ -478,12 +475,10 @@ insert(const char *str, ssize_t n) {
         if (caseInsensitive) {
             fstrncmp = strncasecmp;
             fstrstr = cistrstr;
-            fstrchr = strchri;
         }
         else {
             fstrncmp = strncmp;
             fstrstr = strstr;
-            fstrchr = strchr;
         }
     }
 	match();
@@ -692,21 +687,6 @@ keypress(XKeyEvent *ev) {
 		break;
 	}
 	drawmenu();
-}
-
-char *
-strchri(const char *s, int c) {
-	int i;
-
-	c = tolower(c);
-	while (*s) {
-		i = tolower(*s);
-		if (i == c)
-			return ((char *) s);
-		s++;
-	}
-
-	return NULL;
 }
 
 void
