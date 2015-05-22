@@ -792,7 +792,8 @@ compare_distance(const void *a, const void *b) {
 	return da->distance - db->distance;
 }
 
-char* lowerString(char* s, int n) {
+char*
+lowerString(const char* s, const int n) {
     char* sLower = malloc(sizeof(char) * n + 1);
     strcpy(sLower, s);
     int i;
